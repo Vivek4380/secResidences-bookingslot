@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.HashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +29,11 @@ public class BookingService {
         if (date.isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("Cannot check availability for past dates");
         }
-        Map<Slot, Long> slotCounts = bookingRepository.countByDateAndSlot(date);
+        List<Object[]> counts = bookingRepository.countByDateAndSlotRaw(date);
+        Map<Slot, Long> slotCounts = new HashMap<>();
+        for (Object[] row : counts) {
+            slotCounts.put((Slot) row[0], (Long) row[1]);
+        }
         return new AvailabilityResponse(
                 MAX_BOOKINGS_PER_SLOT - slotCounts.getOrDefault(Slot.MORNING, 0L),
                 MAX_BOOKINGS_PER_SLOT - slotCounts.getOrDefault(Slot.AFTERNOON, 0L),
@@ -69,6 +74,15 @@ public class BookingService {
                 .orElseThrow(() -> new BookingNotFoundException("Booking not found"));
 
         booking.setCleaned(true);
+        booking = bookingRepository.save(booking);
+        return toResponse(booking);
+    }
+
+    @Transactional
+    public BookingResponse reportNotCleaned(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new BookingNotFoundException("Booking not found"));
+        booking.setCleaned(false);
         booking = bookingRepository.save(booking);
         return toResponse(booking);
     }

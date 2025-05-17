@@ -33,4 +33,9 @@ public class BookingController {
     public BookingResponse confirmClean(@PathVariable Long id) {
         return bookingService.confirmClean(id);
     }
+
+    @PostMapping("/{id}/report-not-cleaned")
+    public BookingResponse reportNotCleaned(@PathVariable Long id) {
+        return bookingService.reportNotCleaned(id);
+    }
 }

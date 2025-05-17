@@ -10,6 +10,9 @@ public class FutureDateValidator implements ConstraintValidator<FutureDate, Loca
         if (date == null) {
             return true; // @NotNull will handle this
         }
-        return date.isAfter(LocalDate.now());
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+        LocalDate dayAfterTomorrow = LocalDate.now().plusDays(2);
+        // Allow only tomorrow or the day after tomorrow
+        return date.equals(tomorrow) || date.equals(dayAfterTomorrow);
     }
 }
